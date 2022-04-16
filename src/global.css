@@ -1,0 +1,476 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  --bg: #efefef;
+  --bg2: #a9a9a9;
+  --fg: #1e1e1e;
+  --gray: #555;
+  --light-gray: #ccc;
+  --shadow: #e6e6e6;
+  --success: rgb(90, 206, 132);
+  --primary: #FF585D;
+  --secondary: #0072CE;
+  --wordle-green: rgb(0, 122, 0);
+  --wordle-yellow: rgb(208, 178, 3);
+  --player-blue: #2371b2;
+  --player-red: #b73535;
+
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  font-size: calc(0.9em + 0.5vw);
+  line-height: 1.3;
+}
+
+.ReactModal__Overlay {
+    opacity: 0;
+    transition: opacity 2000ms ease-in-out;
+}
+
+.ReactModal__Overlay--after-open{
+    opacity: 1;
+}
+
+.ReactModal__Overlay--before-close{
+    opacity: 0;
+}
+
+.small-info {
+  font-size: 0.8em;
+  color: var(--gray);
+  text-align: center;
+}
+
+.bidder-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.bidder-container h2 {
+  margin-bottom: 0.2em;
+}
+
+.bidder-container-number {
+  position: absolute;
+  bottom: 0;
+  left: -20%;
+}
+
+.bidder-container[place="0"] .bidder-container-number {
+  font-size: 1.7em;
+  text-shadow: gold 0 0 40px;
+  color: gold;
+}
+
+.bidder-container[place="1"] .bidder-container-number{
+  font-size: 1.4em;
+  text-shadow: lightgray 0 0 40px;
+  color: lightgray;
+}
+
+.bidder-container[place="2"] .bidder-container-number {
+  font-size: 1.3em;
+  text-shadow: orange 0 0 40px;
+  color: orange;
+}
+
+.wordle-board {
+  box-shadow: 0 0 30px #656565;
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 5px;
+  width: calc(350px);
+  height: calc(490px);
+  margin: 0px auto;
+  user-select: none;
+  margin-top: 2em;
+}
+
+.wordle-board[player="1"] {
+  box-shadow: 0 0 30px var(--player-blue);
+}
+
+.wordle-board[player="2"] {
+  box-shadow: 0 0 30px var(--player-red);
+}
+
+.wordle-cell {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: var(--bg);
+  border: 2px solid gray;
+}
+
+@keyframes popout {
+    from{transform:scale(1)}
+    50%{transform:scale(1,0)}
+    to{transform:scale(1)}
+}
+
+.wordle-cell[format="g"] {
+  --cell-color: var(--wordle-green);
+  background-color: var(--cell-color);
+  border-color: var(--cell-color);
+  animation: popout 1s ease-in-out, change2color 1s ease-in;
+}
+
+.wordle-cell[format="y"] {
+  --cell-color: var(--wordle-yellow);
+  background-color: var(--cell-color);
+  border-color: var(--cell-color);
+  animation: popout 1s ease-in-out, change2color 1s ease-in;
+}
+
+.wordle-cell[format="b"] {
+  --cell-color: var(--bg2);
+  background-color: var(--cell-color);
+  border-color: var(--cell-color);
+  animation: popout 1s ease-in-out, change2color 1s ease-in;
+}
+
+.wordle-cell[format="bb"] {
+  background-color: var(--bg);
+}
+
+.wordle-cell[isediting] {
+  border: 2px solid var(--gray);
+}
+
+.wordle-row[isevaluating] {
+  animation: changeColor ease, bounceZoom ease;
+  animation-iteration-count: infinite, 1;
+  animation-duration: 1s, 0.2s;
+}
+
+.bounced-cell {
+  animation: bounceZoom;
+  animation-delay: 0s !important;
+  animation-duration: 0.1s !important;
+}
+
+@keyframes bounceZoom {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes change2color {
+  0% {
+    background-color: var(--bg);
+    border-color: gray;
+  }
+  99% {
+    background-color: var(--bg);
+    border-color: gray;
+  }
+  100% {
+    background-color: var(--cell-color);
+    border-color: var(--cell-color)
+  }
+}
+
+@keyframes changeColor {
+  0% {
+    background-color: var(--wordle-green);
+  }
+
+  50% {
+    background-color: var(--wordle-yellow);
+  }
+
+  100% {
+    background-color: var(--wordle-green);
+  }
+}
+
+.live {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  top: 0.7em;
+  right: 0.8em;
+  color: var(--success)
+}
+
+.live-blink {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border-radius: 50%; 
+  background-color: var(--success);
+  animation: blinker 2s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+#wordle-title {
+  -webkit-box-reflect: below -20px linear-gradient(transparent, rgba(0,0,0,.2));
+}
+
+#wordle-title span {
+  position: relative;
+  display: inline-block;
+  animation: waviy 3s infinite linear, color-animation 15s infinite linear;
+  animation-delay: calc(.2s * var(--i)), calc(.2s * var(--i) + .15s);
+}
+
+@keyframes waviy {
+  0%,10%,100% {
+    transform: translateY(0)
+  }
+  5% {
+    transform: translateY(-20px)
+  }
+}
+
+#wordle-title span:nth-child(1) {
+  --color1: white;
+  --color2: white;
+  --color3: white;
+  --color4: var(--wordle-green);
+  --color5: var(--wordle-yellow);
+}
+
+#wordle-title span:nth-child(2) {
+  --color1: var(--wordle-green);
+  --color2: var(--wordle-yellow);
+  --color3: white;
+  --color4: white;
+  --color5: white;
+}
+
+#wordle-title span:nth-child(3) {
+  --color1: var(--wordle-yellow);
+  --color2: white;
+  --color3: white;
+  --color4: white;
+  --color5: var(--wordle-green);
+}
+
+#wordle-title span:nth-child(4) {
+  --color1: white;
+  --color2: var(--wordle-green);
+  --color3: var(--wordle-yellow);
+  --color4: white;
+  --color5: white;
+}
+
+#wordle-title span:nth-child(5) {
+  --color1: var(--wordle-green);
+  --color2: white;
+  --color3: white;
+  --color4: var(--wordle-yellow);
+  --color5: white;
+}
+
+#wordle-title span:nth-child(6) {
+  --color1: var(--wordle-yellow);
+  --color2: white;
+  --color3: var(--wordle-green);
+  --color4: white;
+  --color5: white;
+}
+
+#wordle-title span:nth-child(7) {
+  --color1: white;
+  --color2: var(--wordle-green);
+  --color3: white;
+  --color4: var(--wordle-yellow);
+  --color5: white;
+}
+
+@keyframes color-animation {
+  0%    {color: var(--color1)}
+  19%   {color: var(--color1)}
+  20%   {color: var(--color2)}
+  39%   {color: var(--color2)}
+  40%   {color: var(--color3)}
+  59%   {color: var(--color3)}
+  60%   {color: var(--color4)}
+  79%   {color: var(--color4)}
+  80%   {color: var(--color5)}
+  100%  {color: var(--color5)}
+}
+
+h3 {
+  color: var(--gray)
+}
+
+body {
+  margin: 0;
+  padding: 0.5em;
+}
+
+main {
+  margin: 0 auto;
+  max-width: 32em;
+}
+
+a,
+.link {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover,
+a:focus,
+.link:hover,
+.link:focus {
+  text-decoration: underline;
+}
+a:active,
+.link:active {
+  color: var(--secondary);
+}
+
+button, input {
+  font: inherit;
+  outline: none;
+}
+
+button {
+  background-color: var(--secondary);
+  border-radius: 5px;
+  border: none;
+  color: #efefef;
+  cursor: pointer;
+  padding: 0.3em 0.75em;
+  transition: transform 30ms;
+}
+button:hover, button:focus {
+  box-shadow: 0 0 10em rgba(255, 255, 255, 0.2) inset;
+}
+button:active {
+  box-shadow: 0 0 10em rgba(0, 0, 0, 0.1) inset;
+}
+button.link {
+  background: none;
+  border: none;
+  box-shadow: none;
+  display: inline;
+}
+[disabled] button, button[disabled] {
+  box-shadow: none;
+  background-color: var(--light-gray);
+  color: gray;
+  cursor: not-allowed;
+  transform: none;
+}
+[disabled] button {
+  text-indent: -900em;
+  width: 2em;
+  position: relative;
+}
+[disabled] button:after {
+  content: " ";
+  display: block;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  border-color: var(--fg) transparent var(--fg) transparent;
+  animation: loader 1.2s linear infinite;
+  position: absolute;
+  top: 0.45em;
+  right: 0.5em;
+}
+@keyframes loader {
+  0% { transform: rotate(0deg) }
+  100% { transform: rotate(360deg) }
+}
+
+fieldset {
+  border: none;
+  padding: 2em 0;
+}
+
+input {
+  background-color: var(--shadow);
+  border: none;
+  border-radius: 5px 0 0 5px;
+  caret-color: var(--primary);
+  color: inherit;
+  padding: 0.25em 1em;
+}
+input::selection {
+  background-color: var(--secondary);
+  color: #efefef;
+}
+input:focus {
+  box-shadow: 0 0 10em rgba(0, 0, 0, 0.02) inset;
+}
+
+code {
+  color: var(--gray);
+}
+
+li {
+  padding-bottom: 0.3em;
+}
+
+li::marker {
+  color: var(--gray);
+}
+
+aside {
+  animation: notify ease-in-out 10s;
+  background-color: var(--shadow);
+  border-radius: 5px;
+  bottom: 0;
+  font-size: 0.8em;
+  margin: 1em;
+  padding: 1em;
+  position: fixed;
+  transform: translateY(10em);
+  right: 0;
+}
+aside footer {
+  display: flex;
+  font-size: 0.9em;
+  justify-content: space-between;
+  margin-top: 0.5em;
+}
+aside footer *:first-child {
+  color: var(--success);
+}
+aside footer *:last-child {
+  color: var(--gray);
+}
+@keyframes notify {
+  0% { transform: translateY(10em) }
+  5% { transform: translateY(0) }
+  95% { transform: translateY(0) }
+  100% { transform: translateY(10em) }
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    --bg: #1e1e1e;
+    --bg2: #393939;
+    --fg: #efefef;
+    --gray: #aaa;
+    --shadow: #2a2a2a;
+    --light-gray: #444;
+  }
+  input:focus {
+    box-shadow: 0 0 10em rgba(255, 255, 255, 0.02) inset;
+  }
+}
