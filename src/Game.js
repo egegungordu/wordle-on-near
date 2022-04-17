@@ -31,7 +31,7 @@ export default function Game(props)
     }, [game])
 
     if (!game) {
-        return <div style={{
+        return <div className='loading' style={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -44,10 +44,18 @@ export default function Game(props)
 
     const gameEndingTime = (game.timestamp/1000000+game.maxGameTime/1000000)
 
+    const handleFinishGameOnClick = (e) => {
+        e.target.disabled = true
+        if(window.walletConnection.isSignedIn()){
+            window.contract.finishGame({ accountId: window.accountId })
+        }
+    }
+
     return  (
         <>
             <main>
                 <Confetti
+                    run={game.gameOver}
                     recycle={game.gameOver && playConfetti}
                 />
                 <div className='live'><div className='live-blink'></div>Live</div>
@@ -78,7 +86,7 @@ export default function Game(props)
                     Total bid: {formatNearAmount(game.totalBid)} Ⓝ
                 </p>
 
-                <WordleBoard game={game}/>
+                <WordleBoard game={game} />
                 <ReactModal 
                     ariaHideApp={false}
                     isOpen={game.gameOver}
@@ -113,18 +121,37 @@ export default function Game(props)
                 textAlign: 'center',
                 padding: '0.3rem',
                 fontSize: '0.8rem',
-                fontFamily: 'monospace',
                 backgroundColor: 'rgba(0,0,0,0.3)',
             }}>
                 <Countdown 
                     date={gameEndingTime} 
-                    renderer={({ hours, minutes, seconds }) => {
+                    renderer={({ hours, minutes, seconds, completed }) => {
+
+                        if(completed && !game.gameOver) {
+                            return (
+                                <button
+                                    onClick={handleFinishGameOnClick}
+                                    style={{
+                                        backgroundColor: '#f44336',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.5rem',
+                                        borderRadius: '0.5rem',
+                                        fontSize: '1rem',
+                                        cursor: 'pointer',
+                                        animation: 'tilt-shaking 0.4s infinite'
+                                    }}>
+                                    STEAL THE BID
+                                </button>
+                            )
+                        }
+
                         return (
                             <div style={{
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                
+                                fontFamily: 'monospace',
                             }}>
                                 <h3 style={{
                                     fontSize: '0.8rem',
@@ -241,12 +268,12 @@ function WordleBoard(props) {
         }
     }
 
+    useEventListener('keydown', handleKeyDown)
+
     return (
         <div 
             className="wordle-board"
             player={game.turn ? "1" : "2"}
-            onKeyDown={handleKeyDown}
-            tabIndex="-1"
             style={{
                 display: 'grid',
                 gridTemplateRows: `repeat(${rows}, 1fr)`,
@@ -316,3 +343,37 @@ function GameOver(props) {
         </div>
     )
 }
+
+function useEventListener(eventName, handler, element = window){
+  // Create a ref that stores handler
+  const savedHandler = React.useRef();
+
+  // Update ref.current value if handler changes.
+  // This allows our effect below to always get latest handler ...
+  // ... without us needing to pass it in effect deps array ...
+  // ... and potentially cause effect to re-run every render.
+  React.useEffect(() => {
+    savedHandler.current = handler;
+  }, [handler]);
+
+  React.useEffect(
+    () => {
+      // Make sure element supports addEventListener
+      // On 
+      const isSupported = element && element.addEventListener;
+      if (!isSupported) return;
+
+      // Create event listener that calls handler function stored in ref
+      const eventListener = event => savedHandler.current(event);
+
+      // Add event listener
+      element.addEventListener(eventName, eventListener);
+
+      // Remove event listener on cleanup
+      return () => {
+        element.removeEventListener(eventName, eventListener);
+      };
+    },
+    [eventName, element] // Re-run if eventName or element changes
+  );
+};

@@ -29,19 +29,19 @@ export default function App() {
     []
   )
 
-    return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="*" element={<Redirect />} />
-          <Route path="bid" element={
-            <Bid game={game} setGame={setGame} />
-          } />
-          <Route path="game" element={
-            <Game game={game} setGame={setGame} />
-          } />
-        </Routes>
-      </BrowserRouter>
-    )
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="*" element={<Redirect />} />
+        <Route path="bid" element={
+          <Bid game={game} setGame={setGame} />
+        } />
+        <Route path="game" element={
+          <Game game={game} setGame={setGame} />
+        } />
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
 
@@ -54,8 +54,14 @@ function Redirect() {
   }, [])
 
   return (
-    <div>
-      <h1>Redirecting...</h1>
+    <div className='loading' style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    }}>
+        <h1>
+            <span role="img" aria-label="loading">⏳</span>
+        </h1>
     </div>
   )
 }

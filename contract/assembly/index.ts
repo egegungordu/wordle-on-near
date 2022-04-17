@@ -47,15 +47,6 @@ export function increaseBid(): void {
   logging.log(`Increased bid for ${accountId} to ${newBid} from ${oldBid}`)
 }
 
-export function resetStorage(): void {
-  storage.delete("owner")
-  storage.delete("topBidders")
-  storage.delete("game")
-  storage.delete("words")
-  storage.delete("candidateWords")
-  bidders.clear()
-}
-
 export function playGame(word: string): void {
   const accountId = Context.sender
   // TODO: players can be stored as a primitive to reduce gas usage
@@ -89,7 +80,7 @@ function refundLosingBids(): void {
 
 export function startGame(): void {
   const previousGame = storage.getSome<Game>("game")
-  //assert(Context.blockTimestamp - previousGame.timestamp > 24 * 60 * 60 * 1000000000, 'You must wait 24 hours before starting a new game')
+  assert(Context.blockTimestamp - previousGame.timestamp > 24 * 60 * 60 * 1000000000, 'You must wait 24 hours before starting a new game')
   assert(bidders.length > 1, 'You must have at least 2 players to start the game')
   const topBidders = storage.getSome<TopBidderList>("topBidders")
   const topBiddersArray = topBidders.getArray()

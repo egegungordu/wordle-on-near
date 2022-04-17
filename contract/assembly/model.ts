@@ -129,17 +129,28 @@ export class Game {
                 let candidateWordChecked = candidateWord
                 const oldSimilarity = this.similarityBoard.at(j)
                 const oldWord = this.board.at(j)
+                let doBreak = false
                 for(let k = 0; k < candidateWord.length; k++) {
                     const oldChar = oldWord.charAt(k)
                     const simChar = oldSimilarity.charAt(k)
                     const canChar = candidateWordChecked.charAt(k)
+                    if(oldChar == canChar && simChar != 'g') {
+                        doesFit = false
+                        doBreak = true
+                        break;
+                    }
                     if(simChar == "g") {
                         if(oldChar != canChar){
                             doesFit = false
+                            doBreak = true
+                            break;
                         } else {
                             candidateWordChecked = candidateWordChecked.substring(0, k) + '!' + candidateWordChecked.substring(k+1)
                         }
                     } 
+                }
+                if(doBreak) {
+                    break
                 }
                 for(let k = 0; k < candidateWord.length; k++) {
                     const oldChar = oldWord.charAt(k)
@@ -148,11 +159,14 @@ export class Game {
                     if (simChar == "y") {
                         if(!candidateWordChecked.includes(oldChar) || oldChar == canChar){
                             doesFit = false
+                            break
                         } else {
-                            candidateWordChecked = candidateWordChecked.substring(0, k) + '!' + candidateWordChecked.substring(k+1)
+                            const similarIndex = candidateWordChecked.indexOf(oldChar)
+                            candidateWordChecked = candidateWordChecked.substring(0, similarIndex) + '!' + candidateWordChecked.substring(similarIndex+1)
                         }
                     } else if (simChar == "b" && candidateWordChecked.includes(oldChar)) {
                         doesFit = false
+                        break
                     }
                 }
             }
@@ -191,9 +205,10 @@ export class Game {
         }
         for(let i = 0; i < word1.length; i++) {
             const char1 = word1.charAt(i)
-            if(word2.includes(char1)) {
+            if(word2.includes(char1) && similarity[i] != 'g') {
                 similarity[i] = 'y'
-                word2 = word2.substring(0, i) + '!' + word2.substring(i+1)
+                const similarIndex = word2.indexOf(char1)
+                word2 = word2.substring(0, similarIndex) + '!' + word2.substring(similarIndex+1)
             }
         }
         return similarity.join('')
@@ -203,6 +218,7 @@ export class Game {
         const words = storage.getSome<string>('words')
         const existsInWordList = words.includes(word)
         const comparedWord = this.selectWord()
+        logging.log('compared word was ' + comparedWord)
         if(existsInWordList) {
             const similarity = this.calculateSimilarity(word, comparedWord)
             this.similarityBoard.push(similarity)

@@ -255,8 +255,59 @@ html {
 #wordle-title span {
   position: relative;
   display: inline-block;
-  animation: waviy 3s infinite linear, color-animation 15s infinite linear;
-  animation-delay: calc(.2s * var(--i)), calc(.2s * var(--i) + .15s);
+  animation: waviy 3s infinite linear, color-animation 15s infinite linear, blinkFastLong 15s infinite linear;
+  animation-delay: calc(.2s * var(--i)), calc(.2s * var(--i) + .15s), 0s;
+}
+
+.loading {
+  animation: rotate 1s infinite linear;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes tilt-shaking {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes blinkFastLong {
+  0% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.2;
+  }
+  94% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0.2;
+  }
+  96% {
+    opacity: 1;
+  }
+  97% {
+    opacity: 0.2;
+  }
+  98% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes waviy {
@@ -273,19 +324,19 @@ html {
   --color2: white;
   --color3: white;
   --color4: var(--wordle-green);
-  --color5: var(--wordle-yellow);
+  --color5: var(--wordle-green);
 }
 
 #wordle-title span:nth-child(2) {
-  --color1: var(--wordle-green);
-  --color2: var(--wordle-yellow);
-  --color3: white;
-  --color4: white;
-  --color5: white;
+  --color1: white;
+  --color2: var(--wordle-green);
+  --color3: var(--wordle-green);
+  --color4: var(--wordle-green);
+  --color5: var(--wordle-green);
 }
 
 #wordle-title span:nth-child(3) {
-  --color1: var(--wordle-yellow);
+  --color1: white;
   --color2: white;
   --color3: white;
   --color4: white;
@@ -294,34 +345,34 @@ html {
 
 #wordle-title span:nth-child(4) {
   --color1: white;
-  --color2: var(--wordle-green);
+  --color2: white;
   --color3: var(--wordle-yellow);
   --color4: white;
-  --color5: white;
+  --color5: var(--wordle-green);
 }
 
 #wordle-title span:nth-child(5) {
-  --color1: var(--wordle-green);
+  --color1: white;
   --color2: white;
-  --color3: white;
-  --color4: var(--wordle-yellow);
-  --color5: white;
+  --color3: var(--wordle-yellow);
+  --color4: white;
+  --color5: var(--wordle-green);
 }
 
 #wordle-title span:nth-child(6) {
   --color1: var(--wordle-yellow);
   --color2: white;
-  --color3: var(--wordle-green);
+  --color3: white;
   --color4: white;
-  --color5: white;
+  --color5: var(--wordle-green);
 }
 
 #wordle-title span:nth-child(7) {
   --color1: white;
-  --color2: var(--wordle-green);
-  --color3: white;
-  --color4: var(--wordle-yellow);
-  --color5: white;
+  --color2: var(--wordle-yellow);
+  --color3: var(--wordle-green);
+  --color4: var(--wordle-green);
+  --color5: var(--wordle-green);
 }
 
 @keyframes color-animation {

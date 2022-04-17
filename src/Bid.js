@@ -104,6 +104,13 @@ export default function Bid(props) {
         )
     }
 
+    const handleStartOnClick = (e) => {
+        e.target.disabled = true
+        if(window.walletConnection.isSignedIn()) {
+            window.contract.startGame({ accountId: window.accountId })
+        }
+    }
+
     return (
         // use React Fragment, <>, to avoid wrapping elements in unnecessary divs
         <>
@@ -137,7 +144,33 @@ export default function Bid(props) {
             {game && <Countdown 
                 date={game ? game.timestamp/1000000 + (24*60*60*1000) : Date.now() + 100000} 
                 renderer={({ hours, minutes, seconds }) => {
-                    // TODO: maybe random people from top 3 can be chosen?
+
+                    const nextGameStart = game ? game.timestamp/1000000 + (24*60*60*1000) : Date.now()
+                    const timeLeft = nextGameStart - Date.now()
+
+                    if(timeLeft < 0) {
+                        return (
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    height: '100%',
+                                    flexDirection: 'column',
+                                }}
+                                onClick={handleStartOnClick}>
+                                <p className='small-info' style={{marginTop:0}}>Be the one that starts the game!</p>
+                                <button
+                                    style={{
+                                        backgroundColor: '#f44336'
+                                    }}>
+                                    Start Game
+                                </button>
+                                <p className='small-info' style={{marginBottom:0}}>Costs around 0.00024 Ⓝ</p>
+                            </div>
+                        )
+                    }
+
                     return (
                         <>
                         <h3>Time left until next game:</h3>
