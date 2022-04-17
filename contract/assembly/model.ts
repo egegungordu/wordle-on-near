@@ -117,7 +117,6 @@ export class Game {
     selectWord(): string {
         const wordList = storage.getSome<string>('candidateWords').split(',')
         if(this.similarityBoard.length == 0) {
-            logging.log("was zero")
             const rng = new RNG<u32>(1, wordList.length)
             return wordList.at(rng.next())
         }
@@ -140,8 +139,14 @@ export class Game {
                         } else {
                             candidateWordChecked = candidateWordChecked.substring(0, k) + '!' + candidateWordChecked.substring(k+1)
                         }
-                    } else if (simChar == "y") {
-                        if((!candidateWordChecked.includes(oldChar) || oldChar == canChar)) {
+                    } 
+                }
+                for(let k = 0; k < candidateWord.length; k++) {
+                    const oldChar = oldWord.charAt(k)
+                    const simChar = oldSimilarity.charAt(k)
+                    const canChar = candidateWordChecked.charAt(k)
+                    if (simChar == "y") {
+                        if(!candidateWordChecked.includes(oldChar) || oldChar == canChar){
                             doesFit = false
                         } else {
                             candidateWordChecked = candidateWordChecked.substring(0, k) + '!' + candidateWordChecked.substring(k+1)
@@ -175,28 +180,29 @@ export class Game {
     }
 
     private calculateSimilarity(word1: string, word2: string): string {
-        let similarity = ''
+        let similarity = new Array<string>(word1.length).fill('b')
         for(let i = 0; i < word1.length; i++) {
             const char1 = word1.charAt(i)
             const char2 = word2.charAt(i)
             if(char1 == char2) {
-                similarity += 'g'
+                similarity[i] = 'g'
                 word2 = word2.substring(0, i) + '!' + word2.substring(i+1)
-            } else if(word2.includes(char1)) {
-                similarity += 'y'
+            } 
+        }
+        for(let i = 0; i < word1.length; i++) {
+            const char1 = word1.charAt(i)
+            if(word2.includes(char1)) {
+                similarity[i] = 'y'
                 word2 = word2.substring(0, i) + '!' + word2.substring(i+1)
-            } else {
-                similarity += 'b'
             }
         }
-        return similarity
+        return similarity.join('')
     }
 
     private checkSimilarity(word: string): void {
         const words = storage.getSome<string>('words')
         const existsInWordList = words.includes(word)
         const comparedWord = this.selectWord()
-        logging.log(comparedWord)
         if(existsInWordList) {
             const similarity = this.calculateSimilarity(word, comparedWord)
             this.similarityBoard.push(similarity)

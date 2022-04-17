@@ -161,8 +161,6 @@ export default function Bid(props) {
             // get elements from the form using their id attribute
             const { fieldset } = event.target.elements
 
-            // hold onto new user-entered value from React's SynthenticEvent for use after `await` call
-            console.log(bidEntry)
             const bid = parseNearAmount(bidEntry) 
 
             // disable the form while the value gets updated on-chain

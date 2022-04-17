@@ -2,6 +2,7 @@ import React from 'react'
 import { formatNearAmount } from './utils'
 import ReactModal from 'react-modal'
 import { useNavigate } from 'react-router-dom'
+import Confetti from 'react-confetti'
 
 import getConfig from './config'
 import Countdown from 'react-countdown';
@@ -11,13 +12,18 @@ export default function Game(props)
 {
     const { game, setGame } = props
     const urlPrefix = `https://explorer.${networkId}.near.org/`
+    const [playConfetti, setPlayConfetti] = React.useState(true)
 
     // call getGame every 5 seconds
     React.useEffect(() => {
+        if(game && game.gameOver){
+            setTimeout(() => {
+                setPlayConfetti(false)
+            },200)
+        }
         const interval = setInterval(() => {
             window.contract.getGame({ accountId: window.accountId })
                 .then(gameFromContract => {
-                    console.log(gameFromContract)
                     setGame(gameFromContract)
                 })
         }, 5000)
@@ -41,6 +47,9 @@ export default function Game(props)
     return  (
         <>
             <main>
+                <Confetti
+                    recycle={game.gameOver && playConfetti}
+                />
                 <div className='live'><div className='live-blink'></div>Live</div>
                 <div className='countdown'
                     style={{
@@ -199,14 +208,12 @@ function WordleBoard(props) {
         let currentColumn = currentPos[1]
         const lowerCase = e.key.toLowerCase()
         const isLetter = lowerCase.length === 1 && (lowerCase >= "a" && lowerCase <= "z")
-        console.log(`keydown: ${e.key} ${lowerCase} ${isLetter}`)
         if (e.key === 'Backspace') {
             if (currentColumn >= 0) {
                 board[currentRow][currentColumn] = ''
                 setBoard(board)
                 setCurrentPos([currentRow, currentColumn - 1])
                 setWasBackspace(true)
-                console.log("set word backspace")
             }
         } else if (isLetter) {
             if (currentColumn + 1 < cols) {
@@ -215,10 +222,8 @@ function WordleBoard(props) {
                 setBoard(board)
                 setCurrentPos([currentRow, currentColumn])
                 setWasBackspace(false)
-                console.log("set word letter")
             }
         } else if (e.key === 'Enter') {
-            console.log(currentColumn, cols)
             if (currentColumn === cols - 1) {
                 setInputDisabled(true)
                 setCurrentPos([currentRow, currentColumn])
@@ -289,7 +294,7 @@ function GameOver(props) {
     const { game } = props
     const navigate = useNavigate()
     const winner = game.winner
-    const wasStolen = winner != game.player1 && winner != game.player2
+    const wasStolen = winner != game.player1 && winner != game.player2 && winner != ''
 
     const winnerJSX = (winner ? 
         <p>{winner} wins the total bid of {formatNearAmount(game.totalBid)} NEAR</p> :
