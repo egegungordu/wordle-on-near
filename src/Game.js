@@ -46,6 +46,7 @@ export default function Game(props)
 
     const handleFinishGameOnClick = (e) => {
         e.target.disabled = true
+        e.target.style.animation = 'none'
         if(window.walletConnection.isSignedIn()){
             window.contract.finishGame({ accountId: window.accountId })
         }
@@ -129,18 +130,7 @@ export default function Game(props)
 
                         if(completed && !game.gameOver) {
                             return (
-                                <button
-                                    onClick={handleFinishGameOnClick}
-                                    style={{
-                                        backgroundColor: '#f44336',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '0.5rem',
-                                        borderRadius: '0.5rem',
-                                        fontSize: '1rem',
-                                        cursor: 'pointer',
-                                        animation: 'tilt-shaking 0.4s infinite'
-                                    }}>
+                                <button className='steal-button' onClick={handleFinishGameOnClick}>
                                     STEAL THE BID
                                 </button>
                             )

@@ -136,6 +136,16 @@ html {
   border: 2px solid gray;
 }
 
+.steal-button {
+  background-color: rgb(244, 67, 54); 
+  color: white; 
+  border: none; 
+  padding: 0.5rem; 
+  border-radius: 0.5rem; 
+  font-size: 1rem; 
+  animation: 0.4s ease 0s infinite normal none running tilt-shaking;
+}
+
 @keyframes popout {
     from{transform:scale(1)}
     50%{transform:scale(1,0)}
