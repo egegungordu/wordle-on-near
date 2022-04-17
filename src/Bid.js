@@ -124,11 +124,12 @@ export default function Bid(props) {
                 <div>
                     <h3>Rules:</h3>
                     <ul style={{color:'gray'}}>
-                        <li>Top 2 bidders will participate in the next duel, betting for their victory.</li>
+                        <li>Top 2 bidders will participate in the next duel, betting for their victory before game time is up.</li>
                         <li>Other bidders get refunded their full bid.</li>
                         <li>The winner gets the total bid. Loser gets nothing.</li>
                         <li>A draw is possible when the word isn't found.</li>
                         <li>The total bid is split equally between the two bidders when a draw occurs.</li>
+                        <li>If the game time is up before the game ends, the total bid is made public (can be claimed by anyone).</li>
                         <li>2% of the total bid is rewared to the contract.</li>
                     </ul>
                 </div>

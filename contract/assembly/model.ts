@@ -1,4 +1,4 @@
-import { storage, u128, Context, ContractPromiseBatch, logging } from "near-sdk-as";
+import { storage, u128, Context, ContractPromiseBatch, logging, PersistentUnorderedMap, PersistentSet, PersistentVector, RNG } from "near-sdk-as";
 
 @nearBindgen
 export class TopBidderList {
@@ -69,7 +69,6 @@ export class Game {
     private turn: boolean;
     private board: Array<string>;
     private similarityBoard: Array<string>;
-    private pendingWord: string;
     private currentRow: u8;
     private wordSize: i32;
     private wordCount: i32;
@@ -85,9 +84,9 @@ export class Game {
         this.gameOverTimestamp = 0
         // 10 minutes in nanoseconds
         this.maxGameTime = 10 * 60 * 1000000000
+        //this.maxGameTime = 1 * 10 * 1000000000
         this.totalBid = totalBid
         this.turn = true
-        this.pendingWord = ''
         this.wordSize = 5
         this.wordCount = 7
         this.currentRow = 0
@@ -98,14 +97,6 @@ export class Game {
     private assertWordValid(word: string): void {
         assert(word.length == this.wordSize, `The word must be ${this.wordSize} characters long`)
         // TODO: only english characters
-    }
-
-    private assertReady(): void {
-        assert(this.pendingWord == '', 'The last pending word was not evaluated')
-    }
-
-    private assertSimilarityReady(): void {
-        assert(this.pendingWord != '', 'No pending word to evaluate')
     }
 
     private assertGameOver(): void {
@@ -119,7 +110,55 @@ export class Game {
     finish(): void {
         this.assertGameOver()
         this.assertTimeUp()
-        this.endGame(false)
+        this.endGame(false, false)
+    }
+
+    selectWord(): string {
+        const wordList = storage.getSome<string>('candidateWords').split(',')
+        if(this.similarityBoard.length == 0) {
+            logging.log("was zero")
+            const rng = new RNG<u32>(1, wordList.length)
+            return wordList.at(rng.next())
+        }
+
+        let candidateWords = new Array<string>() 
+        for(let i = 0; i < wordList.length; i++) {
+            const candidateWord = wordList[i]
+            let doesFit = true
+            for(let j = 0; j < this.similarityBoard.length; j++) {
+                let candidateWordChecked = candidateWord
+                const oldSimilarity = this.similarityBoard.at(j)
+                const oldWord = this.board.at(j)
+                for(let k = 0; k < candidateWord.length; k++) {
+                    const oldChar = oldWord.charAt(k)
+                    const simChar = oldSimilarity.charAt(k)
+                    const canChar = candidateWordChecked.charAt(k)
+                    if(simChar == "g") {
+                        if(oldChar != canChar){
+                            doesFit = false
+                        } else {
+                            candidateWordChecked = candidateWordChecked.substring(0, k) + '!' + candidateWordChecked.substring(k+1)
+                        }
+                    } else if (simChar == "y") {
+                        if((!candidateWordChecked.includes(oldChar) || oldChar == canChar)) {
+                            doesFit = false
+                        } else {
+                            candidateWordChecked = candidateWordChecked.substring(0, k) + '!' + candidateWordChecked.substring(k+1)
+                        }
+                    } else if (simChar == "b" && candidateWordChecked.includes(oldChar)) {
+                        doesFit = false
+                    }
+                }
+            }
+            if(doesFit) {
+                candidateWords.push(candidateWord)
+            }
+        }
+        logging.log("was not zero")
+        logging.log(candidateWords.length)
+        const rng = new RNG<u32>(1, candidateWords.length)
+        storage.set<string>('candidateWords', candidateWords.join(','))
+        return candidateWords.at(rng.next())
     }
 
     play(word: string): void {
@@ -128,35 +167,42 @@ export class Game {
         const isPlayer2 = accountId == this.player2
         this.assertGameOver()
         this.assertWordValid(word)
-        this.assertReady()
         if (this.turn) {
             assert(isPlayer1, 'It is not your turn')
         } else {
             assert(isPlayer2, 'It is not your turn')
         }
-        this.pendingWord = word
+        this.checkSimilarity(word)
     }
 
-    private isInexistent(similarity: string): boolean {
-        let allInexistent = true
-        for(let i = 0; i < similarity.length; i++) {
-            if(similarity.charAt(i) != "i") {
-                allInexistent = false
+    private calculateSimilarity(word1: string, word2: string): string {
+        let similarity = ''
+        for(let i = 0; i < word1.length; i++) {
+            const char1 = word1.charAt(i)
+            const char2 = word2.charAt(i)
+            if(char1 == char2) {
+                similarity += 'g'
+                word2 = word2.substring(0, i) + '!' + word2.substring(i+1)
+            } else if(word2.includes(char1)) {
+                similarity += 'y'
+                word2 = word2.substring(0, i) + '!' + word2.substring(i+1)
+            } else {
+                similarity += 'b'
             }
         }
-        return allInexistent
+        return similarity
     }
 
-    checkSimilarity(similarity: string): void {
-        this.assertWordValid(similarity)
-        this.assertGameOver()
-        this.assertSimilarityReady()
-        if(!this.isInexistent(similarity)) {
+    private checkSimilarity(word: string): void {
+        const words = storage.getSome<string>('words')
+        const existsInWordList = words.includes(word)
+        const comparedWord = this.selectWord()
+        if(existsInWordList) {
+            const similarity = this.calculateSimilarity(word, comparedWord)
             this.similarityBoard.push(similarity)
-            this.board.push(this.pendingWord)
+            this.board.push(word)
             this.currentRow += 1
             this.turn = !this.turn
-            this.pendingWord = ''
             this.evaluateGame() 
         } else {
             this.retries += 1
@@ -164,13 +210,17 @@ export class Game {
                 this.turn = !this.turn
                 this.retries = 0
             }
-            this.pendingWord = ''
         }
     }
 
-    private endGame(hasWinner: boolean): void {
+    private endGame(hasWinner: boolean, stolen: boolean): void {
         // 2% reserved for the contract itself
         const finalAmount = u128.muldiv(this.totalBid, u128.from(98), u128.from(100))
+        if(!stolen){
+            const accountId = Context.sender
+            ContractPromiseBatch.create(accountId).transfer(finalAmount)
+            this.winner = accountId
+        }
         if(hasWinner){
             const isWinnerPlayer1 = this.currentRow % 2 == 1
             this.winner = isWinnerPlayer1 ? this.player1 : this.player2
@@ -195,7 +245,9 @@ export class Game {
             }
         }
         if(allGreen || (this.currentRow == this.wordCount)) {
-            this.endGame(allGreen)
+            this.turn = !this.turn
+            this.currentRow -= 1
+            this.endGame(allGreen, true)
         }
     }
 

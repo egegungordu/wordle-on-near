@@ -1,10 +1,10 @@
 import React from 'react'
-import { parseNearAmount, formatNearAmount } from './utils'
+import { formatNearAmount } from './utils'
 import ReactModal from 'react-modal'
 import { useNavigate } from 'react-router-dom'
 
 import getConfig from './config'
-import { format } from 'near-api-js/lib/utils'
+import Countdown from 'react-countdown';
 const { networkId } = getConfig(process.env.NODE_ENV || 'development')
 
 export default function Game(props)
@@ -36,56 +36,108 @@ export default function Game(props)
         </div>
     }
 
-    return  (
-        <main>
-            <div className='live'><div className='live-blink'></div>Live</div>
-            <h1 style={{ textAlign: 'center', position: 'relative'}}>
-                Ongoing <span style={{fontFamily: 'Abril Fatface, cursive'}}>Worduel</span> 
-            </h1>
-            <p style={{textAlign:'center'}}>
-                Duel between 
-                {' '}
-                <a style={{color:'var(--player-blue)'}}target="_blank" rel="noreferrer" href={`${urlPrefix}/accounts/${game.player1}`}>
-                    {game.player1}
-                </a>
-                {' '}
-                and
-                {' '}
-                <a style={{color:'var(--player-red)'}}target="_blank" rel="noreferrer" href={`${urlPrefix}/accounts/${game.player2}`}>
-                    {game.player2}
-                </a>
-            </p>
-            <p style={{textAlign:'center'}}>
-                Total bid: {formatNearAmount(game.totalBid)} NEAR
-            </p>
+    const gameEndingTime = (game.timestamp/1000000+game.maxGameTime/1000000)
 
-            <WordleBoard game={game}/>
-            <ReactModal 
-                ariaHideApp={false}
-                isOpen={game.gameOver}
-                contentLabel="Game Over"
-                style={{
-                    content: {
-                        top: '50%',
-                        left: '50%',
-                        right: 'auto',
-                        bottom: 'auto',
-                        marginRight: '-50%',
-                        transform: 'translate(-50%, -50%)',
-                        backgroundColor: 'rgba(0,0,0,0)',
-                        border: 'none',
-                        padding: '1rem',
-                        borderRadius: '0.5rem',
-                        textAlign: 'center',
-                    },
-                    overlay: {
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                    }
-                }}
-                >
-                    <GameOver game={game}/>
-            </ReactModal>
-        </main>
+    return  (
+        <>
+            <main>
+                <div className='live'><div className='live-blink'></div>Live</div>
+                <div className='countdown'
+                    style={{
+                        position: 'absolute',
+                        top: '1em',
+                        left: '2em',
+                    }}>
+                </div>
+                <h1 style={{ textAlign: 'center', position: 'relative'}}>
+                    Ongoing <span style={{fontFamily: 'Abril Fatface, cursive'}}>Worduel</span> 
+                </h1>
+                <p style={{textAlign:'center'}}>
+                    Duel between 
+                    {' '}
+                    <a style={{color:'var(--player-blue)'}}target="_blank" rel="noreferrer" href={`${urlPrefix}/accounts/${game.player1}`}>
+                        {game.player1}
+                    </a>
+                    {' '}
+                    and
+                    {' '}
+                    <a style={{color:'var(--player-red)'}}target="_blank" rel="noreferrer" href={`${urlPrefix}/accounts/${game.player2}`}>
+                        {game.player2}
+                    </a>
+                </p>
+                <p style={{textAlign:'center'}}>
+                    Total bid: {formatNearAmount(game.totalBid)} Ⓝ
+                </p>
+
+                <WordleBoard game={game}/>
+                <ReactModal 
+                    ariaHideApp={false}
+                    isOpen={game.gameOver}
+                    contentLabel="Game Over"
+                    style={{
+                        content: {
+                            top: '50%',
+                            left: '50%',
+                            right: 'auto',
+                            bottom: 'auto',
+                            marginRight: '-50%',
+                            transform: 'translate(-50%, -50%)',
+                            backgroundColor: 'rgba(0,0,0,0)',
+                            border: 'none',
+                            padding: '1rem',
+                            borderRadius: '0.5rem',
+                            textAlign: 'center',
+                        },
+                        overlay: {
+                            backgroundColor: 'rgba(0,0,0,0.7)',
+                        }
+                    }}
+                    >
+                        <GameOver game={game}/>
+                </ReactModal>
+            </main>
+            <footer style={{
+                position: 'fixed',
+                bottom: '0',
+                left: '0',
+                right: '0',
+                textAlign: 'center',
+                padding: '0.3rem',
+                fontSize: '0.8rem',
+                fontFamily: 'monospace',
+                backgroundColor: 'rgba(0,0,0,0.3)',
+            }}>
+                <Countdown 
+                    date={gameEndingTime} 
+                    renderer={({ hours, minutes, seconds }) => {
+                        return (
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                
+                            }}>
+                                <h3 style={{
+                                    fontSize: '0.8rem',
+                                    marginRight: '0.5rem',
+                                }}>Time until bid release:</h3>
+                                <p style={{
+                                    textAlign: 'center',
+                                    fontSize: '5em',
+                                    fontFamily: 'monospace',
+                                    fontSize: '2em',
+                                    margin: 0
+                                }}>
+                                    {hours<10?'0':''}{hours}:
+                                    {minutes<10?'0':''}{minutes}:
+                                    {seconds<10?'0':''}{seconds}
+                                </p>
+                            </div>
+                        )
+                    }}
+                />
+            </footer>
+        </>
     )
 }
 
@@ -98,32 +150,42 @@ function WordleBoard(props) {
     const [inputDisabled, setInputDisabled] = React.useState(false)
     const [waitPlay, setWaitPlay] = React.useState(false)
     const [wasBackspace, setWasBackspace] = React.useState(false)
+    const [retries, setRetries] = React.useState(game.retries)
 
     React.useEffect(() => {
         let inputWord
-        if (isTurn()) {
+        if (game.gameOver) {
+            setWaitPlay(false)
+        }
+        if(isTurn()){
             inputWord = [...board[game.currentRow]]
         }
         for(let i = 0; i < rows; i++) {
             const word = game.board[i] ? game.board[i].split('') : Array(cols).fill('')
-            for(let j = 0; j < cols; j++) {
-                board[i][j] = word[j]
-            }
+            board[i] = word
         }
-        setBoard(board)
         setCurrentPos([game.board.length, currentPos[1]])    
-        if (game.pendingWord) {
-            board[game.currentRow] = game.pendingWord.split('')
-            setBoard(board)
+        if(retries < game.retries){
+            inputWord = null
             setWaitPlay(false)
-            setInputDisabled(true)
-        } else {
-            setInputDisabled(false)
-            if(inputWord) {
+            const wordleRowElement = document.getElementsByClassName('wordle-row')[game.currentRow]
+            wordleRowElement.classList.add('shake')
+            setCurrentPos([currentPos[0], -1])
+        }
+        if (isTurn()) {
+            if(inputWord){
                 board[game.currentRow] = inputWord
             }
+            if(board[game.currentRow][0] === '') {
+                setCurrentPos([game.board.length, -1])
+            }
+            setInputDisabled(false)
+        } else{
+            setWaitPlay(false)
         }
-    }, [game.board])
+        setRetries(game.retries)
+        setBoard(board)
+    }, [game])
 
     const isTurn = () => {
         return (game.player1 === window.accountId) == game.turn
@@ -165,7 +227,7 @@ function WordleBoard(props) {
                     window.contract.playGame({
                         accountId: window.accountId,
                         word: board[currentRow].join(''),
-                    })
+                    },"60000000000000","")
                     .then(() => {
                     })
                     .catch(console.error)
@@ -177,7 +239,7 @@ function WordleBoard(props) {
     return (
         <div 
             className="wordle-board"
-            player={game.pendingWord == '' ? (game.turn ? "1" : "2") : undefined}
+            player={game.turn ? "1" : "2"}
             onKeyDown={handleKeyDown}
             tabIndex="-1"
             style={{
@@ -188,13 +250,14 @@ function WordleBoard(props) {
                 height: 'calc(70px * ' + rows + ')',
                 margin: '0 auto',
                 userSelect: 'none',
+                marginBottom: '6em'
             }}
             >
             {board.map((row, rowIndex) => {
                 const similarityArray = game.similarityBoard.length > rowIndex ? 
                     game.similarityBoard[rowIndex].split('') :
                     Array(cols).fill('bb')
-                const isEvaluating = (game.pendingWord || waitPlay) && game.currentRow === rowIndex
+                const isEvaluating = waitPlay && game.currentRow === rowIndex
                 return (
                     <div 
                         className='wordle-row'
@@ -226,14 +289,22 @@ function GameOver(props) {
     const { game } = props
     const navigate = useNavigate()
     const winner = game.winner
+    const wasStolen = winner != game.player1 && winner != game.player2
+
+    const winnerJSX = (winner ? 
+        <p>{winner} wins the total bid of {formatNearAmount(game.totalBid)} NEAR</p> :
+        <p>Draw! Players split the total bid, each getting {formatNearAmount(game.totalBid)} NEAR</p>
+    )
+
+    const stolenJSX = (
+        <p>{winner} stole the bid of {formatNearAmount(game.totalBid)} NEAR</p>
+    )
 
     return (
         <div className="game-over">
             <h1 style={{margin: 0, fontFamily: 'Abril Fatface, cursive'}}>Game Over</h1>
-            {winner ?
-                <p>{winner} wins the total bid of {formatNearAmount(game.totalBid)} NEAR</p> :
-                <p>Draw! Players split the total bid, each getting {formatNearAmount(game.totalBid)} NEAR</p>
-            }
+            {winner && !wasStolen ? <p>The word was: <span style={{color: 'var(--wordle-green)', textTransform: 'uppercase'}}>{game.board[game.currentRow]}</span></p> : <p>The word was not found</p>}
+            {wasStolen ? stolenJSX : winnerJSX}
             <button onClick={() => {
                 navigate('bid')
             }}>Return to Bidding</button>
