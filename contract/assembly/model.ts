@@ -113,6 +113,7 @@ export class Game {
         this.endGame(false, false)
     }
 
+    // theres a bug somewhere
     selectWord(): string {
         const wordList = storage.getSome<string>('candidateWords').split(',')
         if(this.similarityBoard.length == 0) {
@@ -154,8 +155,6 @@ export class Game {
                 candidateWords.push(candidateWord)
             }
         }
-        logging.log("was not zero")
-        logging.log(candidateWords.length)
         const rng = new RNG<u32>(1, candidateWords.length)
         storage.set<string>('candidateWords', candidateWords.join(','))
         return candidateWords.at(rng.next())
@@ -197,6 +196,7 @@ export class Game {
         const words = storage.getSome<string>('words')
         const existsInWordList = words.includes(word)
         const comparedWord = this.selectWord()
+        logging.log(comparedWord)
         if(existsInWordList) {
             const similarity = this.calculateSimilarity(word, comparedWord)
             this.similarityBoard.push(similarity)
