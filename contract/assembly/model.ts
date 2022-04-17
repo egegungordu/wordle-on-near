@@ -218,7 +218,6 @@ export class Game {
         const words = storage.getSome<string>('words')
         const existsInWordList = words.includes(word)
         const comparedWord = this.selectWord()
-        logging.log('compared word was ' + comparedWord)
         if(existsInWordList) {
             const similarity = this.calculateSimilarity(word, comparedWord)
             this.similarityBoard.push(similarity)
