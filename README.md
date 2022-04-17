@@ -3,6 +3,15 @@ Worduel
 
 Wordle dueling game built on near smart contracts.
 
+<p align="middle">
+  <img src="Screen%20Shot%202022-04-17%20at%2005.03.53.png" width="49%" />
+  <img src="Screen%20Shot%202022-04-17%20at%2005.17.41.png" width="49%" /> 
+</p>
+<p align="middle">
+  <img src="Screen%20Shot%202022-04-17%20at%2005.05.17.png" width="49%" /> 
+  <img src="Screen%20Shot%202022-04-17%20at%2005.06.13.png" width="49%" />
+</p>
+
 ### The Idea
 - A new wordle game takes place every day. To get to participate in this game, players bid tokens to get in the top 2.
 - Losers in the bidding phase get refunded. Top 2 players bid makes up the total bid.
