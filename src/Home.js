@@ -43,7 +43,7 @@ export default function Home() {
             alignItems: 'center',
         }}>
             Play with
-            <svg viewBox='100 10 37 32'
+            <svg viewBox='100 10 37 33'
             style={{
                 width: '10%',
                 marginLeft: '5px',
