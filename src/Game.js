@@ -6,13 +6,21 @@ import Confetti from 'react-confetti'
 
 import getConfig from './config'
 import Countdown from 'react-countdown';
+import Loading from './Loading'
 const { networkId } = getConfig(process.env.NODE_ENV || 'development')
 
 export default function Game(props)
 {
     const { game, setGame } = props
+    const navigate = useNavigate()
     const urlPrefix = `https://explorer.${networkId}.near.org/`
     const [playConfetti, setPlayConfetti] = React.useState(true)
+    
+    React.useEffect(() => {
+        if (!window.walletConnection.isSignedIn()) {
+            navigate('/', { replace: true })
+        } 
+    }, [])
 
     // call getGame every 5 seconds
     React.useEffect(() => {
@@ -31,15 +39,7 @@ export default function Game(props)
     }, [game])
 
     if (!game) {
-        return <div className='loading' style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-        }}>
-            <h1>
-                <span role="img" aria-label="loading">⏳</span>
-            </h1>
-        </div>
+        return <Loading />
     }
 
     const gameEndingTime = (game.timestamp/1000000+game.maxGameTime/1000000)

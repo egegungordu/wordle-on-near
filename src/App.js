@@ -1,17 +1,17 @@
 import 'regenerator-runtime/runtime'
 import React from 'react'
+import Home from './Home'
 import Game from './Game'
 import Bid from './Bid'
 import {
   Routes,
   Route,
   BrowserRouter,
-  Navigate,
   useNavigate
 } from "react-router-dom";
 
 import './global.css'
-import { render } from 'react-dom/cjs/react-dom.production.min';
+import Loading from './Loading'
 
 export default function App() {
 
@@ -33,6 +33,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="*" element={<Redirect />} />
+        <Route path="/" element={<Home />} />
         <Route path="bid" element={
           <Bid game={game} setGame={setGame} />
         } />
@@ -50,18 +51,8 @@ function Redirect() {
   const navigate = useNavigate()
 
   React.useEffect(() => {
-    navigate('/bid', { replace: true })
+    navigate('/', { replace: true })
   }, [])
 
-  return (
-    <div className='loading' style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-    }}>
-        <h1>
-            <span role="img" aria-label="loading">⏳</span>
-        </h1>
-    </div>
-  )
+  return <Loading />
 }

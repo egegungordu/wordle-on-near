@@ -1,6 +1,6 @@
 import React from 'react'
 import Countdown from 'react-countdown';
-import { login, logout, parseNearAmount, formatNearAmount } from './utils'
+import { logout, parseNearAmount, formatNearAmount } from './utils'
 import NumberFormat from 'react-number-format';
 import { useNavigate, useSearchParams } from "react-router-dom"
 
@@ -38,6 +38,12 @@ export default function Bid(props) {
         }, 5000)
         return () => clearInterval(interval)
     }, [topBidders])
+    
+    React.useEffect(() => {
+        if (!window.walletConnection.isSignedIn()) {
+            navigate('/', { replace: true })
+        }
+    }, [])
 
     React.useEffect(() => {
         if (game && !game.gameOver) {
@@ -78,31 +84,6 @@ export default function Bid(props) {
         },
         []
     )
-
-    // if not signed in, return early with sign-in prompt
-    if (!window.walletConnection.isSignedIn()) {
-        return (
-        <main>
-            <h1>Welcome to NEAR!</h1>
-            <p>
-            To make use of the NEAR blockchain, you need to sign in. The button
-            below will sign you in using NEAR Wallet.
-            </p>
-            <p>
-            By default, when your app runs in "development" mode, it connects
-            to a test network ("testnet") wallet. This works just like the main
-            network ("mainnet") wallet, but the NEAR Tokens on testnet aren't
-            convertible to other currencies – they're just for testing!
-            </p>
-            <p>
-            Go ahead and click the button below to try it out:
-            </p>
-            <p style={{ textAlign: 'center', marginTop: '2.5em' }}>
-            <button onClick={login}>Sign in</button>
-            </p>
-        </main>
-        )
-    }
 
     const handleStartOnClick = (e) => {
         e.target.disabled = true
@@ -157,10 +138,11 @@ export default function Bid(props) {
                                     alignItems: 'center',
                                     height: '100%',
                                     flexDirection: 'column',
-                                }}
-                                onClick={handleStartOnClick}>
+                                }}>
                                 <p className='small-info' style={{marginTop:0}}>Be the one that starts the game!</p>
                                 <button
+                                    onClick={handleStartOnClick}
+                                    disabled={totalBidders < 2}
                                     style={{
                                         backgroundColor: '#f44336'
                                     }}>
