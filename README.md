@@ -12,6 +12,8 @@ Wordle dueling game built on near smart contracts.
   <img src="Screen%20Shot%202022-04-17%20at%2005.06.13.png" width="49%" />
 </p>
 
+Working demo on [heroku](https://rocky-sands-27300.herokuapp.com/)
+
 ### The Idea
 - A new wordle game takes place every day. To get to participate in this game, players bid tokens to get in the top 2.
 - Losers in the bidding phase get refunded. Top 2 players bid makes up the total bid.
