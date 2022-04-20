@@ -256,6 +256,46 @@ html {
   50% {
     opacity: 0;
   }
+
+}
+.duelist[playing]{
+  text-decoration: none;
+  background-image: linear-gradient(to right, gray, gray);
+  background-size: 0% 0.1em;
+  background-position-y: 100%;
+  background-position-x: 100%;
+  background-repeat: no-repeat;
+  animation: slide 1s linear infinite, duelistColor 2s linear infinite;
+}
+
+@keyframes duelistColor {
+  0% {
+    background-image: linear-gradient(to right, var(--wordle-yellow), var(--wordle-yellow));
+  }
+  100% {
+    background-image: linear-gradient(to right, var(--wordle-green), var(--wordle-green));
+  }
+}
+
+@keyframes slide {
+  0% {
+    background-size: 0% 0.1em;
+    background-position-x: 0%;
+  }
+  25% {
+    background-size: 100% 0.1em;
+    background-position-x: 0%;
+  }
+  75% {
+    background-size: 100% 0.1em;
+    background-position-x: 0%;
+  }
+  76% {
+    background-position-x: 100%;
+  }
+  100% {
+    background-size: 0% 0.1em;
+  }
 }
 
 #wordle-title {

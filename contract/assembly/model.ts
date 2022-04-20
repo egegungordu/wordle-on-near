@@ -61,6 +61,7 @@ export class Game {
     private retries: u8;
     private maxRetries: u8;
     winner: string;
+    stolen: boolean;
     gameOver: boolean;
     timestamp: u64;
     gameOverTimestamp: u64;
@@ -79,7 +80,8 @@ export class Game {
         this.retries = 0
         this.maxRetries = 2
         this.winner = ''
-        this.gameOver = false;
+        this.stolen = false
+        this.gameOver = false
         this.timestamp = Context.blockTimestamp
         this.gameOverTimestamp = 0
         // 10 minutes in nanoseconds
@@ -110,7 +112,8 @@ export class Game {
     finish(): void {
         this.assertGameOver()
         this.assertTimeUp()
-        this.endGame(false, false)
+        this.stolen = true
+        this.endGame(true)
     }
 
     // theres a bug somewhere
@@ -235,15 +238,15 @@ export class Game {
         }
     }
 
-    private endGame(hasWinner: boolean, stolen: boolean): void {
+    private endGame(hasWinner: boolean): void {
         // 2% reserved for the contract itself
         const finalAmount = u128.muldiv(this.totalBid, u128.from(98), u128.from(100))
-        if(!stolen){
+        if(this.stolen){
             const accountId = Context.sender
             ContractPromiseBatch.create(accountId).transfer(finalAmount)
             this.winner = accountId
-        }
-        if(hasWinner){
+            logging.log(`${accountId} stole the bid of ${finalAmount} yoktoNEAR`)
+        } else if(hasWinner) {
             const isWinnerPlayer1 = this.currentRow % 2 == 1
             this.winner = isWinnerPlayer1 ? this.player1 : this.player2
             ContractPromiseBatch.create(this.winner).transfer(finalAmount)
@@ -269,7 +272,7 @@ export class Game {
         if(allGreen || (this.currentRow == this.wordCount)) {
             this.turn = !this.turn
             this.currentRow -= 1
-            this.endGame(allGreen, true)
+            this.endGame(allGreen)
         }
     }
 

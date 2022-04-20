@@ -15,6 +15,7 @@ export default function Game(props)
     const navigate = useNavigate()
     const urlPrefix = `https://explorer.${networkId}.near.org/`
     const [playConfetti, setPlayConfetti] = React.useState(true)
+    const { width, height } = useWindowSize()
     
     React.useEffect(() => {
         if (!window.walletConnection.isSignedIn()) {
@@ -55,9 +56,15 @@ export default function Game(props)
     return  (
         <>
             <main>
-                <Confetti
+                <Confetti 
+                    style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%'
+                    }}
                     run={game.gameOver}
                     recycle={game.gameOver && playConfetti}
+                    width={width}
+                    height={height}
                 />
                 <div className='live'><div className='live-blink'></div>Live</div>
                 <div className='countdown'
@@ -73,13 +80,13 @@ export default function Game(props)
                 <p style={{textAlign:'center'}}>
                     Duel between 
                     {' '}
-                    <a style={{color:'var(--player-blue)'}}target="_blank" rel="noreferrer" href={`${urlPrefix}/accounts/${game.player1}`}>
+                    <a playing={game.turn ? 'true' : undefined} className='duelist' style={{color:'var(--player-blue)'}}target="_blank" rel="noreferrer" href={`${urlPrefix}/accounts/${game.player1}`}>
                         {game.player1}
                     </a>
                     {' '}
                     and
                     {' '}
-                    <a style={{color:'var(--player-red)'}}target="_blank" rel="noreferrer" href={`${urlPrefix}/accounts/${game.player2}`}>
+                    <a playing={!game.turn ? 'true' : undefined} className='duelist' style={{color:'var(--player-red)'}}target="_blank" rel="noreferrer" href={`${urlPrefix}/accounts/${game.player2}`}>
                         {game.player2}
                     </a>
                 </p>
@@ -181,7 +188,6 @@ function WordleBoard(props) {
 
     React.useEffect(() => {
         let inputWord
-        setOldBoardLength(game.board.length)
         if (game.gameOver) {
             setWaitPlay(false)
         }
@@ -210,6 +216,9 @@ function WordleBoard(props) {
             }
         } {}
         if (isTurn()) {
+            if(retries == game.retries){
+                setInputDisabled(false)
+            }
             if(inputWord){
                 board[game.currentRow] = inputWord
             }
@@ -220,6 +229,7 @@ function WordleBoard(props) {
             setWaitPlay(false)
         }
         setRetries(game.retries)
+        setOldBoardLength(game.board.length)
         setBoard(board)
     }, [game])
 
@@ -321,11 +331,11 @@ function GameOver(props) {
     const { game } = props
     const navigate = useNavigate()
     const winner = game.winner
-    const wasStolen = winner != game.player1 && winner != game.player2 && winner != ''
+    const stolen = game.stolen
 
     const winnerJSX = (winner ? 
         <p>{winner} wins the total bid of {formatNearAmount(game.totalBid)} NEAR</p> :
-        <p>Draw! Players split the total bid, each getting {formatNearAmount(game.totalBid)} NEAR</p>
+        <p>Draw! Players splitting the total bid of {formatNearAmount(game.totalBid)} NEAR</p>
     )
 
     const stolenJSX = (
@@ -335,8 +345,8 @@ function GameOver(props) {
     return (
         <div className="game-over">
             <h1 style={{margin: 0, fontFamily: 'Abril Fatface, cursive'}}>Game Over</h1>
-            {winner && !wasStolen ? <p>The word was: <span style={{color: 'var(--wordle-green)', textTransform: 'uppercase'}}>{game.board[game.currentRow]}</span></p> : <p>The word was not found</p>}
-            {wasStolen ? stolenJSX : winnerJSX}
+            {winner && !stolen ? <p>The word was: <span style={{color: 'var(--wordle-green)', textTransform: 'uppercase'}}>{game.board[game.currentRow]}</span></p> : <p>The word was not found</p>}
+            {stolen ? stolenJSX : winnerJSX}
             <button onClick={() => {
                 navigate('bid')
             }}>Return to Bidding</button>
@@ -377,3 +387,29 @@ function useEventListener(eventName, handler, element = window){
     [eventName, element] // Re-run if eventName or element changes
   );
 };
+
+function useWindowSize() {
+  // Initialize state with undefined width/height so server and client renders match
+  // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
+  const [windowSize, setWindowSize] = React.useState({
+    width: undefined,
+    height: undefined,
+  });
+  React.useEffect(() => {
+    // Handler to call on window resize
+    function handleResize() {
+      // Set window width/height to state
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+    // Add event listener
+    window.addEventListener("resize", handleResize);
+    // Call handler right away so state gets updated with initial window size
+    handleResize();
+    // Remove event listener on cleanup
+    return () => window.removeEventListener("resize", handleResize);
+  }, []); // Empty array ensures that effect is only run on mount
+  return windowSize;
+}

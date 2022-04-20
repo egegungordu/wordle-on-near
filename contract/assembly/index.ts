@@ -4,6 +4,10 @@ import { Game, TopBidderList, Tuple } from './model'
 const bidders = new PersistentUnorderedMap<string, u128>('bidders')
 const topBidderSize = 10
 
+function assertInitialized(): void {
+  assert(storage.hasKey('owner'), 'Contract is not initialized')
+}
+
 function updateTopBidders(bidder: string, amount: u128): number {
   const topBidders = storage.getSome<TopBidderList>("topBidders")
   topBidders.add(bidder, amount)
@@ -14,15 +18,18 @@ function updateTopBidders(bidder: string, amount: u128): number {
 }
 
 export function getTopBidders(): Array<Tuple<string,u128>> {
+  assertInitialized()
   const topBidders = storage.getSome<TopBidderList>("topBidders")
   return topBidders.getArray()
 }
 
 export function getTotalBidders(): number {
+  assertInitialized()
   return bidders.length
 }
 
 export function placeBid(): void {
+  assertInitialized()
   const accountId = Context.sender
   const bid = Context.attachedDeposit
   const game = storage.getSome<Game>("game")
@@ -34,6 +41,7 @@ export function placeBid(): void {
 } 
 
 export function increaseBid(): void {
+  assertInitialized()
   const accountId = Context.sender
   const bidIncrease = Context.attachedDeposit
   const game = storage.getSome<Game>("game")
@@ -48,6 +56,7 @@ export function increaseBid(): void {
 }
 
 export function playGame(word: string): void {
+  assertInitialized()
   const accountId = Context.sender
   // TODO: players can be stored as a primitive to reduce gas usage
   const game = storage.getSome<Game>("game")
@@ -58,6 +67,7 @@ export function playGame(word: string): void {
 }
 
 export function finishGame(): void {
+  assertInitialized()
   const accountId = Context.sender
   const game = storage.getSome<Game>("game")
   game.finish()
@@ -66,6 +76,7 @@ export function finishGame(): void {
 }
 
 export function getBid(accountId: string): u128 | null {
+  assertInitialized()
   return bidders.get(accountId)
 }
 
@@ -79,6 +90,7 @@ function refundLosingBids(): void {
 }
 
 export function startGame(): void {
+  assertInitialized()
   const previousGame = storage.getSome<Game>("game")
   assert(Context.blockTimestamp - previousGame.timestamp > 24 * 60 * 60 * 1000000000, 'You must wait 24 hours before starting a new game')
   assert(bidders.length > 1, 'You must have at least 2 players to start the game')
@@ -98,6 +110,7 @@ export function startGame(): void {
 }
 
 export function getGame(): Game {
+  assertInitialized()
   return storage.getSome<Game>("game")
 }
 
