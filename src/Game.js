@@ -177,9 +177,11 @@ function WordleBoard(props) {
     const [waitPlay, setWaitPlay] = React.useState(false)
     const [wasBackspace, setWasBackspace] = React.useState(false)
     const [retries, setRetries] = React.useState(game.retries)
+    const [oldBoardLength, setOldBoardLength] = React.useState(0)
 
     React.useEffect(() => {
         let inputWord
+        setOldBoardLength(game.board.length)
         if (game.gameOver) {
             setWaitPlay(false)
         }
@@ -191,13 +193,22 @@ function WordleBoard(props) {
             board[i] = word
         }
         setCurrentPos([game.board.length, currentPos[1]])    
-        if(retries < game.retries){
+        if(retries != game.retries){
             inputWord = null
             setWaitPlay(false)
-            const wordleRowElement = document.getElementsByClassName('wordle-row')[game.currentRow]
-            wordleRowElement.classList.add('shake')
+            if(oldBoardLength == game.board.length){
+                console.log('shake')
+                const wordleRowElement = document.getElementsByClassName('wordle-row')[game.currentRow]
+                wordleRowElement.classList.add('shake')
+                setTimeout(() => {
+                    wordleRowElement.classList.remove('shake')
+                }, 1000)
+            }
             setCurrentPos([currentPos[0], -1])
-        }
+            if(isTurn()){
+                setInputDisabled(false)
+            }
+        } {}
         if (isTurn()) {
             if(inputWord){
                 board[game.currentRow] = inputWord
@@ -205,7 +216,6 @@ function WordleBoard(props) {
             if(board[game.currentRow][0] === '') {
                 setCurrentPos([game.board.length, -1])
             }
-            setInputDisabled(false)
         } else{
             setWaitPlay(false)
         }
@@ -249,7 +259,7 @@ function WordleBoard(props) {
                     window.contract.playGame({
                         accountId: window.accountId,
                         word: board[currentRow].join(''),
-                    },"60000000000000","")
+                    },"80000000000000","")
                     .then(() => {
                     })
                     .catch(console.error)

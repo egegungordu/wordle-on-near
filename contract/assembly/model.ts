@@ -224,10 +224,11 @@ export class Game {
             this.board.push(word)
             this.currentRow += 1
             this.turn = !this.turn
+            this.retries = 0
             this.evaluateGame() 
         } else {
             this.retries += 1
-            if(this.retries > this.maxRetries) {
+            if(this.retries >= this.maxRetries) {
                 this.turn = !this.turn
                 this.retries = 0
             }
