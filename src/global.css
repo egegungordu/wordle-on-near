@@ -129,7 +129,7 @@ html {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  font-size: 2rem;
+  font-size: 40px;
   font-weight: bold;
   text-transform: uppercase;
   background-color: var(--bg);
