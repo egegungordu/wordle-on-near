@@ -216,7 +216,7 @@ function WordleBoard(props) {
             }
         } {}
         if (isTurn()) {
-            if(retries == game.retries){
+            if(retries == game.retries && oldBoardLength != game.board.length){
                 setInputDisabled(false)
             }
             if(inputWord){

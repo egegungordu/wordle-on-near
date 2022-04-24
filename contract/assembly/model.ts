@@ -247,7 +247,7 @@ export class Game {
             this.winner = accountId
             logging.log(`${accountId} stole the bid of ${finalAmount} yoktoNEAR`)
         } else if(hasWinner) {
-            const isWinnerPlayer1 = this.currentRow % 2 == 1
+            const isWinnerPlayer1 = this.currentRow % 2 == 0
             this.winner = isWinnerPlayer1 ? this.player1 : this.player2
             ContractPromiseBatch.create(this.winner).transfer(finalAmount)
             logging.log(`${this.winner} won the game with ${finalAmount} yoktoNEAR`)
