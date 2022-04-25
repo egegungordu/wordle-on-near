@@ -126,6 +126,7 @@ export function initContract(): void {
   storage.set<TopBidderList>("topBidders", new TopBidderList())
   const genesisGame = new Game("", "", u128.from(0))
   genesisGame.gameOver = true
+  genesisGame.timestamp = Context.blockTimestamp - 24 * 60 * 60 * 1000000000
   storage.set<Game>("game", genesisGame)
   createWords()
 }
