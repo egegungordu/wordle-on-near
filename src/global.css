@@ -588,16 +588,14 @@ aside footer *:last-child {
   100% { transform: translateY(10em) }
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    --bg: #1e1e1e;
-    --bg2: #393939;
-    --fg: #efefef;
-    --gray: #aaa;
-    --shadow: #2a2a2a;
-    --light-gray: #444;
-  }
-  input:focus {
-    box-shadow: 0 0 10em rgba(255, 255, 255, 0.02) inset;
-  }
+html {
+--bg: #1e1e1e;
+--bg2: #393939;
+--fg: #efefef;
+--gray: #aaa;
+--shadow: #2a2a2a;
+--light-gray: #444;
+}
+input:focus {
+box-shadow: 0 0 10em rgba(255, 255, 255, 0.02) inset;
 }
