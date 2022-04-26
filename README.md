@@ -30,6 +30,7 @@ Working demo on [heroku](https://rocky-sands-27300.herokuapp.com/)
 - Deploy the contracts and the react webapp on development mode by `npm run dev` or `yarn dev`
 
 ## Option 2 - Deploy the contract and test
+- Clone the project
 - Locate to the `scripts` folder
 - Follow instructions in the `README.md` file
 
