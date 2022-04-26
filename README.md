@@ -24,9 +24,14 @@ Working demo on [heroku](https://rocky-sands-27300.herokuapp.com/)
 
 # Try it
 
+## Option 1 - Run the whole project (backend + frontend)
 - Clone the project and run either `npm install` or `yarn`
 - Make sure you are logged in on near-cli
 - Deploy the contracts and the react webapp on development mode by `npm run dev` or `yarn dev`
+
+## Option 2 - Deploy the contract and test
+- Locate to the `scripts` folder
+- Follow instructions in the `README.md` file
 
 # Functions in the contract
 initContract
